@@ -26,6 +26,9 @@ module.exports = {
     "node_modules/",
     "dist/",
   ],
+  rules: {
+    "@typescript-eslint/explicit-function-return-type": "off",
+  },
   overrides: [
     {
       files: ["*.js?(x)", "*.ts?(x)"],

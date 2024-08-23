@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String   @db.LongText
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  Tags      Tag[]
+  Author    Author   @relation(fields: [authorId], references: [userId])
+  authorId  Int      @map("author_id")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  Post      Post?    @relation(fields: [postId], references: [id])
+  postId    Int?     @map("post_id")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String
+  password  String
+  confirmed Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  Author    Author?
+  Role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+}
+
+model Author {
+  bio    String @db.MediumText
+  userId Int
+  User   User   @relation(fields: [userId], references: [id])
+  Posts  Post[]
+
+  @@unique([userId])
+}
+
+model Permission {
+  id Int @id @default(autoincrement())
+
+  name           String
+  createdAt      DateTime         @default(now()) @map("created_at")
+  RolePermission RolePermission[]
+}
+
+model Role {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  User           User[]
+  RolePermission RolePermission[]
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  Role       Role       @relation(fields: [roleId], references: [id])
+  Permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
